@@ -112,8 +112,6 @@ if __name__ == "__main__":
                 obs[3:6] = gravity_orientation
                 obs[6:9] = cmd * cmd_scale
                 obs[9 : 9 + num_actions] = qj
-                print("num_actions",num_actions)
-                print("obs[9 + num_actions : 9 + 2 * num_actions].shape",obs[9 + num_actions : 9 + 2 * num_actions].shape)
                 obs[9 + num_actions : 9 + 2 * num_actions] = dqj
                 obs[9 + 2 * num_actions : 9 + 3 * num_actions] = action
                 obs[9 + 3 * num_actions : 9 + 3 * num_actions + 2] = np.array([sin_phase, cos_phase])

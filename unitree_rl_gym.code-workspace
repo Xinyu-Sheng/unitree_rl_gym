@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../unitree_sdk2_python/unitree_sdk2py"
+		}
+	],
+	"settings": {
+		"ros.distro": "humble"
+	}
+}

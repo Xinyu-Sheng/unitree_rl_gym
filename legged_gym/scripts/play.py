@@ -22,7 +22,8 @@ def play(args):
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
-
+    env_cfg.commands.ranges.lin_vel_x = [1.9, 2.0] 
+    env_cfg.commands.ranges.ang_vel_yaw = [0.4, 0.5] 
     env_cfg.env.test = True
 
     # prepare environment

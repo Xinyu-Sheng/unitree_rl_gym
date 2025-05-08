@@ -79,6 +79,36 @@ class G1Robot(LeggedRobot):
                                     sin_phase,
                                     cos_phase
                                     ),dim=-1)
+        # print("++++++++++++++++++++++++++++++++++++++")
+        # print("Dimensions of each tensor before concatenation:")
+
+        # # 1. base_lin_vel
+        # print(f"self.base_lin_vel: {self.base_lin_vel.shape}")
+
+        # # 2. base_ang_vel
+        # print(f"self.base_ang_vel: {self.base_ang_vel.shape}")
+
+        # # 3. projected_gravity
+        # print(f"self.projected_gravity: {self.projected_gravity.shape}")
+
+        # # 4. commands
+        # print(f"self.commands[:, :3]: {self.commands[:, :3].shape}")
+
+        # # 5. dof_pos
+        # print(f"(self.dof_pos - self.default_dof_pos): {(self.dof_pos - self.default_dof_pos).shape}")
+
+        # # 6. dof_vel
+        # print(f"self.dof_vel: {self.dof_vel.shape}")
+
+        # # 7. actions
+        # print(f"self.actions: {self.actions.shape}")
+
+        # # 8. sin_phase
+        # print(f"sin_phase: {sin_phase.shape}")
+
+        # # 9. cos_phase
+        # print(f"cos_phase: {cos_phase.shape}")
+
         self.privileged_obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
                                     self.base_ang_vel  * self.obs_scales.ang_vel,
                                     self.projected_gravity,
@@ -89,6 +119,8 @@ class G1Robot(LeggedRobot):
                                     sin_phase,
                                     cos_phase
                                     ),dim=-1)
+        # print(f"Concatenated privileged_obs_buf dimension: {self.privileged_obs_buf.shape}")
+        # print("===========================================")
         # add perceptive inputs if not blind
         # add noise if needed
         if self.add_noise:
@@ -102,7 +134,7 @@ class G1Robot(LeggedRobot):
             contact = self.contact_forces[:, self.feet_indices[i], 2] > 1
             res += ~(contact ^ is_stance)
         return res
-    
+        
     def _reward_feet_swing_height(self):
         contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
         pos_error = torch.square(self.feet_pos[:, :, 2] - 0.08) * ~contact
