@@ -1,5 +1,5 @@
 #
-policy_path: "/home/xinyu/Projects/Isaac/Lab_1/logs/rsl_rl/g1_rough/2025-05-08_12-30-08/exported/policy.pt"
+policy_path: "/home/xinyu/Projects/Isaac/Lab_1/logs/rsl_rl/g1_rough/2025-05-08_17-02-42/exported/policy.pt"
 xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/g1_23dof.xml"
 
 # Total simulation time
@@ -85,6 +85,9 @@ default_angles: [
     0.87, # right_elbow_joint
     0.0, # right_wrist_roll_joint
   ]
+# ang_vel_scale: 1.0
+# dof_pos_scale: 1.0
+# dof_vel_scale: 1.0
 ang_vel_scale: 1.0
 dof_pos_scale: 1.0
 dof_vel_scale: 1.0

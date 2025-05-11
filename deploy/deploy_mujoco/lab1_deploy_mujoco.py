@@ -92,32 +92,40 @@ if __name__ == "__main__":
                 # Apply control signal here.
 
                 # create observation
-                qj = d.qpos[7:]
-                dqj = d.qvel[6:]
-                quat = d.qpos[3:7]
-                omega = d.qvel[3:6]
+                base_lin_vel = d.qvel[:3]  # 基础线速度
+                print("base_lin_vel: ",base_lin_vel)
+                base_ang_vel = d.qvel[3:6]  # 基础角速度
+                # print("base_ang_vel: ",base_ang_vel)
+                quat = d.qpos[3:7]  # 四元数
+                gravity_orientation = get_gravity_orientation(quat)  # 投影重力方向
+         
+                velocity_commands = cmd * cmd_scale  # 速度命令
 
-                qj = (qj - default_angles) * dof_pos_scale
-                dqj = dqj * dof_vel_scale
-                gravity_orientation = get_gravity_orientation(quat)
-                omega = omega * ang_vel_scale
+                
+                joint_pos = d.qpos[7:]  # 关节位置
+                joint_vel = d.qvel[6:]  # 关节速度
+          
 
-                period = 0.8
-                count = counter * simulation_dt
-                phase = count % period / period
-                sin_phase = np.sin(2 * np.pi * phase)
-                cos_phase = np.cos(2 * np.pi * phase)
+                # 归一化和缩放
+                joint_pos = (joint_pos - default_angles) * dof_pos_scale
+                joint_vel = joint_vel * dof_vel_scale
+                base_ang_vel = base_ang_vel * ang_vel_scale
 
-                obs[:3] = omega
-                obs[3:6] = gravity_orientation
-                obs[6:9] = cmd * cmd_scale
-                obs[9 : 9 + num_actions] = qj
-                obs[9 + num_actions : 9 + 2 * num_actions] = dqj
-                obs[9 + 2 * num_actions : 9 + 3 * num_actions] = action
-                obs[9 + 3 * num_actions : 9 + 3 * num_actions + 2] = np.array([sin_phase, cos_phase])
+                # 组装 observation
+                obs[:3] = base_lin_vel  # 基础线速度
+                obs[3:6] = base_ang_vel  # 基础角速度
+                obs[6:9] = gravity_orientation  # 投影重力方向
+                obs[9:12] = velocity_commands  # 速度命令
+                obs[12:35] = action  # 上一时刻的动作
+                obs[35:58] = joint_pos  # 关节位置
+                obs[58:81] = joint_vel  # 关节速度
+
+                # 转换为张量
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
+
                 # policy inference
                 action = policy(obs_tensor).detach().numpy().squeeze()
+
                 # transform action to target_dof_pos
                 target_dof_pos = action * action_scale + default_angles
 
