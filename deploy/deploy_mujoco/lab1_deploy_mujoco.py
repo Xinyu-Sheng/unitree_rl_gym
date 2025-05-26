@@ -7,7 +7,12 @@ from legged_gym import LEGGED_GYM_ROOT_DIR
 import torch
 import yaml
 
+mujoco_from_isaaclab_transform = [0, 3, 7, 11, 15, 19, 1, 4, 8, 12, 16, 20, 2, 5, 9, 13, 17, 21, 6, 10, 14, 18, 22]
+# mujoco_from_isaaclab_transform = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+isaaclab_from_mujoco_transform = [0, 6, 12, 1, 7, 13, 18, 2, 8, 14, 19, 3, 9, 15, 20, 4, 10, 16, 21, 5, 11, 17, 22]
+# isaaclab_from_mujoco_transform = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 
+# mujoco_from_isaaclab_transform1 =[0, 3, 7, 11, 15, 19, 1, 4, 8, 12, 16, 20, 2, 5, 9, 13, 17, 21, 6, 10, 14, 18, 22]
 def get_gravity_orientation(quaternion):
     qw = quaternion[0]
     qx = quaternion[1]
@@ -26,7 +31,6 @@ def get_gravity_orientation(quaternion):
 def pd_control(target_q, q, kp, target_dq, dq, kd):
     """Calculates torques from position commands"""
     return (target_q - q) * kp + (target_dq - dq) * kd
-
 
 if __name__ == "__main__":
     # get config file name from command line
@@ -56,13 +60,13 @@ if __name__ == "__main__":
         action_scale = config["action_scale"]
         cmd_scale = np.array(config["cmd_scale"], dtype=np.float32)
 
-        num_actions = config["num_actions"]
+        num_action_mujocos = config["num_actions"]
         num_obs = config["num_obs"]
         
         cmd = np.array(config["cmd_init"], dtype=np.float32)
 
     # define context variables
-    action = np.zeros(num_actions, dtype=np.float32)
+    action_mujoco = np.zeros(num_action_mujocos, dtype=np.float32)
     target_dof_pos = default_angles.copy()
     obs = np.zeros(num_obs, dtype=np.float32)
 
@@ -75,14 +79,17 @@ if __name__ == "__main__":
 
     # load policy
     policy = torch.jit.load(policy_path)
-
+    
     with mujoco.viewer.launch_passive(m, d) as viewer:
         # Close the viewer automatically after simulation_duration wall-seconds.
+        d.qpos[7:] = target_dof_pos  # 例如 default_angles
+        d.qvel[6:] = np.zeros_like(d.qvel[6:])  # 速度归零
         start = time.time()
         while viewer.is_running() and time.time() - start < simulation_duration:
             step_start = time.time()
             tau = pd_control(target_dof_pos, d.qpos[7:], kps, np.zeros_like(kds), d.qvel[6:], kds)
             d.ctrl[:] = tau
+
             # mj_step can be replaced with code that also evaluates
             # a policy and applies a control signal before stepping the physics.
             mujoco.mj_step(m, d)
@@ -90,10 +97,10 @@ if __name__ == "__main__":
             counter += 1
             if counter % control_decimation == 0:
                 # Apply control signal here.
-
+  
                 # create observation
                 base_lin_vel = d.qvel[:3]  # 基础线速度
-                print("base_lin_vel: ",base_lin_vel)
+
                 base_ang_vel = d.qvel[3:6]  # 基础角速度
                 # print("base_ang_vel: ",base_ang_vel)
                 quat = d.qpos[3:7]  # 四元数
@@ -107,28 +114,38 @@ if __name__ == "__main__":
           
 
                 # 归一化和缩放
-                joint_pos = (joint_pos - default_angles) * dof_pos_scale
-                joint_vel = joint_vel * dof_vel_scale
-                base_ang_vel = base_ang_vel * ang_vel_scale
+                joint_pos = joint_pos - default_angles
+                base_ang_vel = base_ang_vel 
 
                 # 组装 observation
                 obs[:3] = base_lin_vel  # 基础线速度
                 obs[3:6] = base_ang_vel  # 基础角速度
                 obs[6:9] = gravity_orientation  # 投影重力方向
                 obs[9:12] = velocity_commands  # 速度命令
-                obs[12:35] = action  # 上一时刻的动作
-                obs[35:58] = joint_pos  # 关节位置
-                obs[58:81] = joint_vel  # 关节速度
+                obs[12:35] = action_mujoco[isaaclab_from_mujoco_transform] # 上一时刻的动作
+                # obs[12:35] = action_mujoco# 上一时刻的动作
+                obs[35:58] = joint_pos[isaaclab_from_mujoco_transform]  # 关节位置
+                obs[58:81] = joint_vel[isaaclab_from_mujoco_transform]  # 关节速度
+                np.set_printoptions(suppress=True, precision=6)
+                # print("Last  obser: ", obs)  # 上一时刻的动作
+        
+                if counter % ( 100) == 0:
+                    print("obs: ", obs)  # 上一时刻的动作
+                    print("action_scale: ", action_scale)
 
                 # 转换为张量
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
 
                 # policy inference
-                action = policy(obs_tensor).detach().numpy().squeeze()
+                action_isaaclab = policy(obs_tensor).detach().numpy().squeeze()
+                # print("Action: ", action_isaaclab)  # 上一时刻的动作
+                action_mujoco=action_isaaclab[mujoco_from_isaaclab_transform]
+                # action_mujoco=action_isaaclab
 
-                # transform action to target_dof_pos
-                target_dof_pos = action * action_scale + default_angles
+                # transform action_mujoco to target_dof_pos
 
+                target_dof_pos = action_mujoco * action_scale + default_angles
+                
             # Pick up changes to the physics state, apply perturbations, update options from GUI.
             viewer.sync()
 

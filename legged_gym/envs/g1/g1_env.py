@@ -119,6 +119,16 @@ class G1Robot(LeggedRobot):
                                     sin_phase,
                                     cos_phase
                                     ),dim=-1)
+        # self.privileged_obs_buf = torch.cat((  self.base_lin_vel ,
+        #                             self.base_ang_vel,
+        #                             self.projected_gravity,
+        #                             self.commands[:, :3] ,
+        #                             (self.dof_pos - self.default_dof_pos) ,
+        #                             self.dof_vel ,
+        #                             self.actions ,
+        #                             sin_phase,
+        #                             cos_phase
+        #                             ),dim=-1)
         # print(f"Concatenated privileged_obs_buf dimension: {self.privileged_obs_buf.shape}")
         # print("===========================================")
         # add perceptive inputs if not blind
