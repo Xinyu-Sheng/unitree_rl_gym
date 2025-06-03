@@ -99,33 +99,61 @@ if __name__ == "__main__":
                 # Apply control signal here.
   
                 # create observation
-                base_lin_vel = d.qvel[:3]  # 基础线速度
-
-                base_ang_vel = d.qvel[3:6]  # 基础角速度
-                # print("base_ang_vel: ",base_ang_vel)
-                quat = d.qpos[3:7]  # 四元数
-                gravity_orientation = get_gravity_orientation(quat)  # 投影重力方向
-         
-                velocity_commands = cmd * cmd_scale  # 速度命令
+                # base_lin_vel = d.qvel[:3]  # 基础线速度
 
                 
+                
+                # # print("base_ang_vel: ",base_ang_vel)
+                # quat = d.qpos[3:7]  # 四元数
+                # ===========================
+                # base_lin_vel_world = d.qvel[:3]  # 世界系基础线速度
+                # base_ang_vel_world = d.qvel[3:6]  # 世界系基础角速度
+                
+
+                # neg_quat = np.zeros(4, dtype=np.float64)
+                # mujoco.mju_negQuat(neg_quat, quat)
+
+                # base_lin_vel = np.zeros(3, dtype=np.float64)
+                # base_ang_vel = np.zeros(3, dtype=np.float64)
+                # mujoco.mju_rotVecQuat(base_lin_vel, base_lin_vel_world, neg_quat)
+                # mujoco.mju_rotVecQuat(base_ang_vel, base_ang_vel_world, neg_quat)
+
+                base_ang_vel = d.qvel[3:6]  # 基础角速度
+                quat = d.qpos[3:7]  
+                gravity_orientation = get_gravity_orientation(quat)  # 投影重力方向
+
+
+                velocity_commands = cmd * cmd_scale  # 速度命令
+
                 joint_pos = d.qpos[7:]  # 关节位置
                 joint_vel = d.qvel[6:]  # 关节速度
           
 
                 # 归一化和缩放
                 joint_pos = joint_pos - default_angles
-                base_ang_vel = base_ang_vel 
+                 
+
+                # # 组装 observation
+                # obs[:3] = base_lin_vel  # 基础线速度
+                # obs[3:6] = base_ang_vel  # 基础角速度
+                # obs[6:9] = gravity_orientation  # 投影重力方向
+                # obs[9:12] = velocity_commands  # 速度命令
+                # obs[12:35] = action_mujoco[isaaclab_from_mujoco_transform] # 上一时刻的动作
+                # # obs[12:35] = action_mujoco# 上一时刻的动作
+                # obs[35:58] = joint_pos[isaaclab_from_mujoco_transform]  # 关节位置
+                # obs[58:81] = joint_vel[isaaclab_from_mujoco_transform]  # 关节速度
+
 
                 # 组装 observation
-                obs[:3] = base_lin_vel  # 基础线速度
-                obs[3:6] = base_ang_vel  # 基础角速度
-                obs[6:9] = gravity_orientation  # 投影重力方向
-                obs[9:12] = velocity_commands  # 速度命令
-                obs[12:35] = action_mujoco[isaaclab_from_mujoco_transform] # 上一时刻的动作
+                obs[:3] = base_ang_vel  # 基础角速度
+                obs[3:6] = gravity_orientation  # 投影重力方向
+                obs[6:9] = velocity_commands  # 速度命令
+                obs[9:32] = action_mujoco[isaaclab_from_mujoco_transform] # 上一时刻的动作
                 # obs[12:35] = action_mujoco# 上一时刻的动作
-                obs[35:58] = joint_pos[isaaclab_from_mujoco_transform]  # 关节位置
-                obs[58:81] = joint_vel[isaaclab_from_mujoco_transform]  # 关节速度
+                obs[32:55] = joint_pos[isaaclab_from_mujoco_transform]  # 关节位置
+                obs[55:78] = joint_vel[isaaclab_from_mujoco_transform]  # 关节速度
+
+
                 np.set_printoptions(suppress=True, precision=6)
                 # print("Last  obser: ", obs)  # 上一时刻的动作
         

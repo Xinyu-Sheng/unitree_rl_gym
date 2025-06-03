@@ -34,7 +34,8 @@
   </asset>
 
   <worldbody>
-    <body name="pelvis" pos="0 0 0.793">
+    <!-- <body name="pelvis" pos="0 0 0.793" quat="0.707 0 0 0.707"> -->
+    <body name="pelvis" pos="0 0 0.76">
       <inertial pos="0 0 -0.07605" quat="1 0 -0.000399148 0" mass="3.813"
         diaginertia="0.010549 0.0093089 0.0079184" />
       <joint name="floating_base_joint" type="free" limited="false" actuatorfrclimited="false" />

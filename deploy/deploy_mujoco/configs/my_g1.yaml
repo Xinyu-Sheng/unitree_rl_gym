@@ -1,6 +1,6 @@
 # python deploy/deploy_mujoco/deploy_mujoco.py my_g1.yaml
 policy_path: "{LEGGED_GYM_ROOT_DIR}/exported/policies/policy_lstm_1.pt"
-xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/scene.xml"
+xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/my_g1_12dof.xml"
 
 # Total simulation time
 simulation_duration: 60.0

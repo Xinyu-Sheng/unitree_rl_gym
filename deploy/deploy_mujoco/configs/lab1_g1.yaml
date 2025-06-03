@@ -1,5 +1,5 @@
 #
-policy_path: "/home/xinyu/Projects/Isaac/Lab_1/logs/rsl_rl/g1_rough/2025-05-26_14-52-16/exported/policy.pt"
+policy_path: "/home/xinyu/Projects/Isaac/Lab_1/logs/rsl_rl/g1_rough/2025-05-28_16-45-45/exported/policy.pt"
 # policy_path: "/home/xinyu/Projects/Isaac/Lab_1/logs/rsl_rl/g1_rough/2025-05-13_19-08-53/exported/policy.pt"
 
 xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/lab1_g1_23dof_rev_1_0.xml"
@@ -177,7 +177,7 @@ action_scale: 0.5
 # action_scale: 0.01
 
 num_actions: 23
-num_obs: 81
+num_obs: 78
 
 cmd_scale: [1.0, 1.0, 1.0]
-cmd_init: [0.000000, 0.0, 0.0]
+cmd_init: [1.0, 0.0, 0.0]
