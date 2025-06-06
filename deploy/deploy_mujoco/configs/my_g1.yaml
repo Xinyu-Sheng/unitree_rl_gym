@@ -1,13 +1,13 @@
 # python deploy/deploy_mujoco/deploy_mujoco.py my_g1.yaml
-policy_path: "{LEGGED_GYM_ROOT_DIR}/exported/policies/policy_lstm_1.pt"
+policy_path: "/home/xinyu/Projects/unitree/unitree_rl_gym/logs/g1/exported/policies/policy_lstm_1.pt"
 xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/my_g1_12dof.xml"
 
 # Total simulation time
 simulation_duration: 60.0
 # Simulation time step
-simulation_dt: 0.002
+simulation_dt: 0.005
 # Controller update frequency (meets the requirement of simulation_dt * controll_decimation=0.02; 50Hz)
-control_decimation: 10
+control_decimation: 4
 
 kps: [100, 100, 100, 150, 40, 40, 100, 100, 100, 150, 40, 40]
 kds: [2, 2, 2, 4, 2, 2, 2, 2, 2, 4, 2, 2]
